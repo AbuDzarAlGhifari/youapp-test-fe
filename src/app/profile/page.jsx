@@ -1,32 +1,74 @@
 'use client';
 
 import Link from 'next/link';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FaAngleLeft } from 'react-icons/fa6';
 import { HiDotsHorizontal } from 'react-icons/hi';
 import BannerImage from './_partials/BannerImage';
 import About from './_partials/About';
 import Interest from './_partials/Interest';
+import { getProfile, createProfile } from '@/services/profile';
+import { toast } from 'react-hot-toast';
 
 const ProfilePage = () => {
-  // State untuk data profil
-  const [profileData, setProfileData] = useState({
-    username: 'johndoe',
-    gender: '',
-    birthday: '28/08/2000',
-    age: '20',
-    horoscope: 'Virgo',
-    zodiac: 'Pig',
-    height: '175',
-    weight: '69',
-    imgurl: '',
-  });
+  const [profileData, setProfileData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Fungsi untuk menyimpan data yang diperbarui
-  const handleSave = (updatedData) => {
-    setProfileData((prev) => ({ ...prev, ...updatedData }));
-    console.log('Updated Profile Data:', updatedData);
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        toast.error('Unauthorized. Please login.');
+        return;
+      }
+
+      try {
+        const response = await getProfile(token);
+        console.log('ini data', response); // Debugging
+        setProfileData(response.data); // Ambil hanya bagian `data`
+      } catch (error) {
+        toast.error(
+          error.response?.data?.message || 'Failed to fetch profile.'
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  const handleSave = async (updatedData) => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      toast.error('Unauthorized. Please login.');
+      return;
+    }
+
+    try {
+      const payload = {
+        name: updatedData.name, // Use 'name' instead of 'displayName'
+        birthday: updatedData.birthday,
+        height: Number(updatedData.height),
+        weight: Number(updatedData.weight),
+        interests: updatedData.interests || [],
+      };
+
+      const response = await createProfile(payload, token);
+      toast.success(response.message || 'Profile updated successfully');
+      setProfileData((prev) => ({ ...prev, ...updatedData })); // Update state with new data
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to update profile.');
+    }
   };
+
+  if (loading) {
+    return <p className="text-white">Loading...</p>;
+  }
+
+  if (!profileData) {
+    return <p className="text-white">Failed to load profile.</p>;
+  }
 
   return (
     <div className="min-h-screen bg-[#09141A] flex flex-col items-center sm:justify-center px-2 text-white">
@@ -40,7 +82,10 @@ const ProfilePage = () => {
             <FaAngleLeft className="size-5" />
             Back
           </Link>
-          <div className="text-sm font-semibold">@{profileData.username}</div>
+          <div className="text-sm font-semibold">
+            @{profileData.username || 'Anonymous'}{' '}
+            {/* Ambil username dari data */}
+          </div>
           <HiDotsHorizontal className="size-5" />
         </div>
 
@@ -56,7 +101,7 @@ const ProfilePage = () => {
 
         {/* Interest Section */}
         <section className="mb-[18px]">
-          <Interest interests={['Music', 'Basketball', 'Fitness', 'Gymming']} />
+          <Interest interests={profileData.interests || []} />
         </section>
       </div>
     </div>

@@ -1,8 +1,73 @@
-import Link from 'next/link';
-import React from 'react';
-import { LuPencilLine } from 'react-icons/lu';
+'use client';
 
-const Interest = ({ interests = [] }) => {
+import Link from 'next/link';
+import React, { useEffect, useState } from 'react';
+import { LuPencilLine } from 'react-icons/lu';
+import { toast } from 'react-hot-toast';
+import { getProfile, createProfile } from '@/services/profile';
+
+const Interest = () => {
+  const [interests, setInterests] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        toast.error('Unauthorized. Please login.');
+        return;
+      }
+
+      try {
+        const profileData = await getProfile(token);
+        console.log(profileData);
+        if (profileData.data && profileData.data.interests) {
+          setInterests(profileData.data.interests);
+        } else {
+          toast.error('No interests found.');
+        }
+      } catch (error) {
+        toast.error(
+          error.response?.data?.message || 'Failed to fetch interests.'
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  const handleUpdateInterests = async (newInterests) => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      toast.error('Unauthorized. Please login.');
+      return;
+    }
+
+    try {
+      const payload = {
+        name: '',
+        birthday: '',
+        height: 0,
+        weight: 0,
+        interests: newInterests,
+      };
+
+      const response = await createProfile(payload, token);
+      toast.success(response.message || 'Interests updated successfully');
+      setInterests(newInterests);
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || 'Failed to update interests.'
+      );
+    }
+  };
+
+  if (loading) {
+    return <p className="text-white">Loading...</p>;
+  }
+
   return (
     <div className="h-auto bg-[#0E191F] px-7 pt-4 pb-7 rounded-xl">
       <div className="flex items-center justify-between mb-4">

@@ -1,7 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { registerUser } from '@/services/auth';
+import { toast } from 'react-hot-toast';
 import Input from '@/components/inputs/Input';
 
 const RegisterPage = () => {
@@ -11,42 +14,42 @@ const RegisterPage = () => {
     password: '',
     confirmPassword: '',
   });
-  const [errorMessage, setErrorMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
-  const isDisabled =
-    !formData.email.trim() ||
-    !formData.username.trim() ||
-    !formData.password.trim() ||
-    !formData.confirmPassword.trim();
+  const isFormValid = Object.values(formData).every((value) => value.trim());
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-  };
+  const handleChange = ({ target: { name, value } }) =>
+    setFormData((prev) => ({ ...prev, [name]: value }));
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
     const { email, username, password, confirmPassword } = formData;
 
-    if (!email || !username || !password || !confirmPassword) {
-      setErrorMessage('Please fill in all fields.');
+    if (!isFormValid) {
+      toast.error('Please fill in all fields.');
       return;
     }
 
     if (password !== confirmPassword) {
-      setErrorMessage('Passwords do not match.');
+      toast.error('Passwords do not match.');
       return;
     }
 
-    alert('Registration successfu!');
-    setErrorMessage('');
+    setIsLoading(true);
+    try {
+      const response = await registerUser({ email, username, password });
+      toast.success(response.message || 'Registration successful!');
+      router.push('/');
+    } catch (error) {
+      toast.error(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <>
+    <div>
       <h2 className="px-10 text-2xl font-semibold">Register</h2>
       <form onSubmit={handleRegister} className="flex flex-col px-6 mt-6 mb-14">
         <div className="space-y-5">
@@ -55,56 +58,48 @@ const RegisterPage = () => {
             placeholder="Enter Email"
             name="email"
             value={formData.email}
-            onChange={handleInputChange}
+            onChange={handleChange}
           />
           <Input
             type="text"
             placeholder="Create Username"
             name="username"
             value={formData.username}
-            onChange={handleInputChange}
+            onChange={handleChange}
           />
           <Input
             type="password"
             placeholder="Create Password"
             name="password"
             value={formData.password}
-            onChange={handleInputChange}
+            onChange={handleChange}
           />
           <Input
             type="password"
             placeholder="Confirm Password"
             name="confirmPassword"
             value={formData.confirmPassword}
-            onChange={handleInputChange}
+            onChange={handleChange}
           />
         </div>
-
-        <div className="relative mt-6">
-          <button
-            type="submit"
-            disabled={isDisabled}
-            className="w-full py-3 text-base font-bold text-white transition duration-300 rounded-lg shadow-md bg-gradient-to-r from-green-400 to-blue-500 hover:shadow-lg hover:bg-gradient-to-r hover:to-green-300 hover:from-blue-500 disabled:opacity-50 disabled:bg-current"
-          >
-            Register
-          </button>
-        </div>
-
-        {errorMessage && (
-          <div className="mt-4 text-red-500">{errorMessage}</div>
-        )}
-
+        <button
+          type="submit"
+          disabled={!isFormValid || isLoading}
+          className="w-full py-3 mt-6 text-base font-bold text-white rounded-lg shadow-md bg-gradient-to-r from-green-400 to-blue-500 hover:from-blue-500 hover:to-green-300 disabled:opacity-50"
+        >
+          {isLoading ? 'Registering...' : 'Register'}
+        </button>
         <p className="text-sm text-center text-white mt-11">
           Have an account?{' '}
           <Link
             href="/login"
-            className="text-yellow-200 border-b border-yellow-200 hover:opacity-50 hover:border-transparent"
+            className="text-yellow-200 border-b border-yellow-200 hover:opacity-50"
           >
             Login here
           </Link>
         </p>
       </form>
-    </>
+    </div>
   );
 };
 

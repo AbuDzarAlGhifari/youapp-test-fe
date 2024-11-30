@@ -29,12 +29,14 @@ const About = ({ data, onSave }) => {
             onClick={() => setIsEditing(true)}
           />
         ) : (
-          <button
-            className="text-sm text-yellow-300 hover:text-opacity-55"
-            onClick={() => setIsEditing(false)}
-          >
-            Save & Update
-          </button>
+          <div className="flex space-x-2">
+            <button
+              className="text-sm text-yellow-300 hover:text-opacity-55"
+              onClick={() => setIsEditing(false)}
+            >
+              Cancel
+            </button>
+          </div>
         )}
       </div>
 
@@ -49,7 +51,7 @@ const About = ({ data, onSave }) => {
           {data.birthday && (
             <li>
               <span className="text-white text-opacity-45">Birthday:</span>{' '}
-              {data.birthday} <span>(Age {data.age})</span>
+              {data.birthday}
             </li>
           )}
           {data.horoscope && (
