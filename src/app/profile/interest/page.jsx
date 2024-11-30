@@ -1,32 +1,32 @@
 'use client';
 
+import { getInterest, updateInterest } from '@/services/interest';
 import Link from 'next/link';
-import React, { useState, useEffect } from 'react';
-import { FaAngleLeft } from 'react-icons/fa6';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import axios from 'axios';
+import { FaAngleLeft } from 'react-icons/fa6';
+import Tag from './_partials/Tag';
 
 const InterestPage = () => {
   const [interests, setInterests] = useState([]);
   const [newInterest, setNewInterest] = useState('');
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchData = async () => {
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        toast.error('Unauthorized. Please login.');
+        return;
+      }
+
       try {
-        const token = localStorage.getItem('access_token');
-        if (!token) {
-          toast.error('Unauthorized. Please login.');
-          return;
-        }
-        const response = await axios.get(
-          'https://techtest.youapp.ai/api/getProfile',
-          {
-            headers: { 'x-access-token': token },
-          }
-        );
-        setInterests(response.data.data.interests || []);
+        const profileData = await getInterest(token);
+        setInterests(profileData.interests || []);
       } catch (error) {
-        toast.error('Failed to load profile.');
+        toast.error(error || 'Failed to load profile.');
       }
     };
 
@@ -55,37 +55,42 @@ const InterestPage = () => {
       return;
     }
 
+    const name = 'John Doe';
+    const birthday = '1990-01-01';
+    const height = 170;
+    const weight = 70;
+
+    if (!name || !birthday || height <= 0 || weight <= 0) {
+      toast.error('Please provide valid information.');
+      return;
+    }
+
     try {
+      setLoading(true);
       const payload = {
-        name: '',
-        birthday: '',
-        height: 0,
-        weight: 0,
-        interests: interests,
+        name,
+        birthday,
+        height,
+        weight,
+        interests,
       };
 
-      const response = await axios.post(
-        'https://techtest.youapp.ai/api/createProfile',
-        payload,
-        {
-          headers: {
-            'x-access-token': token,
-          },
-        }
-      );
-
-      toast.success(response.data.message || 'Interests updated successfully');
+      await updateInterest(payload, token);
+      toast.success('Interests updated successfully!');
+      router.push('/profile');
     } catch (error) {
+      console.error('Error:', error.response?.data || error.message);
       toast.error(
         error.response?.data?.message || 'Failed to update interests.'
       );
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-bl from-[#1F4247] via-[#0D1D23] to-[#09141A] flex flex-col items-center sm:justify-center text-white">
       <div className="w-full max-w-sm mx-auto sm:rounded-xl pt-9 pb-7 sm:px-5 sm:shadow-lg">
-        {/* Header */}
         <div className="flex justify-between px-2 mb-7">
           <Link
             href="./"
@@ -94,7 +99,13 @@ const InterestPage = () => {
             <FaAngleLeft className="size-5" />
             Back
           </Link>
-          <h1 className="text-sm font-semibold text-blue-300">Save</h1>
+          <button
+            onClick={handleSaveInterests}
+            className="text-sm font-bold text-blue-300 hover:opacity-70"
+            disabled={loading}
+          >
+            {loading ? 'Saving...' : 'Save'}
+          </button>
         </div>
 
         <section className="px-9">
@@ -105,42 +116,22 @@ const InterestPage = () => {
             What interests you?
           </h1>
 
-          {/* Tag Input */}
           <div className="flex flex-wrap items-center gap-2 px-4 py-3 mt-8 bg-[#D9D9D9] bg-opacity-5 rounded-lg">
             {interests.map((interest, index) => (
-              <div
+              <Tag
                 key={index}
-                className="flex items-center gap-1 px-3 py-1 text-xs font-semibold bg-white rounded-md bg-opacity-10"
-              >
-                <span>{interest}</span>
-                <button
-                  onClick={() => handleRemoveInterest(interest)}
-                  className="text-white hover:text-red-400"
-                >
-                  ✕
-                </button>
-              </div>
+                label={interest}
+                onRemove={() => handleRemoveInterest(interest)}
+              />
             ))}
-
-            {/* Add New Interest */}
             <input
               type="text"
               value={newInterest}
               onChange={(e) => setNewInterest(e.target.value)}
               onKeyDown={handleAddInterest}
-              className="flex-grow text-sm text-white bg-transparent min-h-9 focus:outline-none"
-              placeholder="Press Enter to add an interest"
+              placeholder="Add interest"
+              className="flex-grow min-w-[100px] text-sm text-white bg-transparent outline-none placeholder:text-[#94A3B8]"
             />
-          </div>
-
-          {/* Save Interests */}
-          <div className="flex justify-center mt-6">
-            <button
-              onClick={handleSaveInterests}
-              className="text-sm text-yellow-300 hover:text-opacity-55"
-            >
-              Save Interests
-            </button>
           </div>
         </section>
       </div>

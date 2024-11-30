@@ -7,7 +7,7 @@ import { HiDotsHorizontal } from 'react-icons/hi';
 import BannerImage from './_partials/BannerImage';
 import About from './_partials/About';
 import Interest from './_partials/Interest';
-import { getProfile, createProfile } from '@/services/profile';
+import { getProfile, createProfile, updateProfile } from '@/services/profile';
 import { toast } from 'react-hot-toast';
 
 const ProfilePage = () => {
@@ -19,17 +19,15 @@ const ProfilePage = () => {
       const token = localStorage.getItem('access_token');
       if (!token) {
         toast.error('Unauthorized. Please login.');
+        setLoading(false);
         return;
       }
 
       try {
         const response = await getProfile(token);
-        console.log('ini data', response); // Debugging
-        setProfileData(response.data); // Ambil hanya bagian `data`
+        setProfileData(response.data);
       } catch (error) {
-        toast.error(
-          error.response?.data?.message || 'Failed to fetch profile.'
-        );
+        toast.error(error || 'Failed to fetch profile.');
       } finally {
         setLoading(false);
       }
@@ -47,18 +45,25 @@ const ProfilePage = () => {
 
     try {
       const payload = {
-        name: updatedData.name, // Use 'name' instead of 'displayName'
+        name: updatedData.name,
         birthday: updatedData.birthday,
         height: Number(updatedData.height),
         weight: Number(updatedData.weight),
         interests: updatedData.interests || [],
+        gender: updatedData.gender,
       };
 
-      const response = await createProfile(payload, token);
-      toast.success(response.message || 'Profile updated successfully');
-      setProfileData((prev) => ({ ...prev, ...updatedData })); // Update state with new data
+      let response;
+      if (profileData?.id) {
+        response = await updateProfile(payload, token);
+      } else {
+        response = await createProfile(payload, token);
+      }
+
+      toast.success(response.message || 'Profile saved successfully');
+      setProfileData((prev) => ({ ...prev, ...updatedData }));
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to update profile.');
+      toast.error(error || 'Failed to save profile.');
     }
   };
 
@@ -83,8 +88,7 @@ const ProfilePage = () => {
             Back
           </Link>
           <div className="text-sm font-semibold">
-            @{profileData.username || 'Anonymous'}{' '}
-            {/* Ambil username dari data */}
+            @{profileData.username || 'Anonymous'}
           </div>
           <HiDotsHorizontal className="size-5" />
         </div>

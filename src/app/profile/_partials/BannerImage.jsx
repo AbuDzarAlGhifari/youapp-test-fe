@@ -1,23 +1,10 @@
 'use client';
 
 import React from 'react';
+import { calculateAge } from '@/utils/dateUtils';
 import { GiVirgo, GiPig } from 'react-icons/gi';
 
 const BannerImage = ({ data }) => {
-  const calculateAge = (birthday) => {
-    const birthDate = new Date(birthday);
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (
-      monthDiff < 0 ||
-      (monthDiff === 0 && today.getDate() < birthDate.getDate())
-    ) {
-      age--;
-    }
-    return age;
-  };
-
   return (
     <div
       className="relative flex justify-end w-full h-48 mx-auto bg-center bg-cover bg-white/5 rounded-2xl"

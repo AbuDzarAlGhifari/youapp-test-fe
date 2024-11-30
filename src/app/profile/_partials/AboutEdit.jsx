@@ -1,18 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
-
-const FormField = ({ label, children }) => (
-  <div className="grid items-center grid-cols-12">
-    <label className="col-span-4 text-xs text-white text-opacity-45">
-      {label}
-    </label>
-    <div className="col-span-8">{children}</div>
-  </div>
-);
-
-const inputStyle =
-  'w-full bg-[#1C2A33] text-xs text-end text-white text-sm p-2 rounded-md outline-none border border-[#D9D9D9] border-opacity-5 mt-1';
+import InputField from '@/components/inputs/InputField';
+import SelectField from '@/components/inputs/SelectField';
+import React from 'react';
+import { formatDateInput } from '@/utils/dateUtils';
+import { FaPlus } from 'react-icons/fa6';
 
 const genderOptions = [
   { value: '', label: 'Select Gender' },
@@ -20,91 +12,83 @@ const genderOptions = [
   { value: 'Female', label: 'Female' },
 ];
 
-const AboutEdit = ({ data, onSave }) => {
-  const [formData, setFormData] = useState({
-    name: data?.name || '',
-    gender: data?.gender || '',
-    birthday: data?.birthday || '',
-    height: data?.height || '',
-    weight: data?.weight || '',
-  });
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSave(formData);
-  };
-
+const AboutEdit = ({ data, onInputChange }) => {
   return (
-    <form className="space-y-4" onSubmit={handleSubmit}>
-      <FormField label="Display name:">
-        <input
-          type="text"
-          name="name"
-          placeholder="Enter name"
-          value={formData.name}
-          onChange={handleInputChange}
-          className={inputStyle}
-        />
-      </FormField>
+    <form className="space-y-4">
+      {/* Section Gambar */}
+      <div className="flex items-center gap-2 mb-4">
+        <div className="flex items-center justify-center bg-gray-600 cursor-pointer size-14 rounded-2xl">
+          <FaPlus className="size-6" />
+        </div>
+        <p className="text-xs font-medium text-white">Add image</p>
+      </div>
 
-      <FormField label="Gender:">
-        <select
-          name="gender"
-          value={formData.gender}
-          onChange={handleInputChange}
-          className={inputStyle}
-        >
-          {genderOptions.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </FormField>
+      {/* Name */}
+      <InputField
+        label="Display name:"
+        type="text"
+        name="name"
+        value={data.name}
+        onChange={onInputChange}
+        placeholder="Enter name"
+      />
 
-      <FormField label="Birthday:">
-        <input
-          type="date"
-          name="birthday"
-          value={formData.birthday}
-          onChange={handleInputChange}
-          className={inputStyle}
-        />
-      </FormField>
+      {/* Gender */}
+      <SelectField
+        label="Gender:"
+        name="gender"
+        value={data.gender}
+        onChange={onInputChange}
+        options={genderOptions}
+      />
 
-      <FormField label="Height:">
-        <input
-          type="number"
-          name="height"
-          placeholder="Add height"
-          value={formData.height}
-          onChange={handleInputChange}
-          className={inputStyle}
-        />
-      </FormField>
+      {/* Birthday */}
+      <InputField
+        label="Birthday:"
+        type="date"
+        name="birthday"
+        value={data.birthday}
+        onChange={onInputChange}
+        placeholder={formatDateInput(data.birthday)}
+      />
 
-      <FormField label="Weight:">
-        <input
-          type="number"
-          name="weight"
-          placeholder="Add weight"
-          value={formData.weight}
-          onChange={handleInputChange}
-          className={inputStyle}
-        />
-      </FormField>
+      {/* Horoscope */}
+      <InputField
+        label="Horoscope:"
+        type="text"
+        name="horoscope"
+        value={data.horoscope}
+        readOnly
+      />
 
-      <button
-        type="submit"
-        className="text-sm text-yellow-300 hover:text-opacity-55"
-      >
-        Save
-      </button>
+      {/* Zodiac */}
+      <InputField
+        label="Zodiac:"
+        type="text"
+        name="zodiac"
+        value={data.zodiac}
+        readOnly
+      />
+
+      {/* Height */}
+      <InputField
+        label="Height (cm):"
+        type="number"
+        name="height"
+        value={data.height}
+        onChange={onInputChange}
+        placeholder="Add height"
+      />
+
+      {/* Weight */}
+      <InputField
+        label="Weight (kg):"
+        type="number"
+        name="weight"
+        value={data.weight}
+        onChange={onInputChange}
+        placeholder="Add weight"
+      />
     </form>
   );
 };
