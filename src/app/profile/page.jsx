@@ -4,21 +4,25 @@ import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 import { FaAngleLeft } from 'react-icons/fa6';
 import { HiDotsHorizontal } from 'react-icons/hi';
+import { useRouter } from 'next/navigation';
 import BannerImage from './_partials/BannerImage';
 import About from './_partials/About';
 import Interest from './_partials/Interest';
-import { getProfile, createProfile, updateProfile } from '@/services/profile';
-import { toast } from 'react-hot-toast';
+import { getProfile, updateProfile } from '@/services/profile';
+import Loading from '@/components/Loading';
 
 const ProfilePage = () => {
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState({ text: '', type: '' });
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchProfile = async () => {
       const token = localStorage.getItem('access_token');
       if (!token) {
-        toast.error('Unauthorized. Please login.');
+        setMessage({ text: 'Unauthorized. Please login.', type: 'error' });
         setLoading(false);
         return;
       }
@@ -27,7 +31,10 @@ const ProfilePage = () => {
         const response = await getProfile(token);
         setProfileData(response.data);
       } catch (error) {
-        toast.error(error || 'Failed to fetch profile.');
+        setMessage({
+          text: error.message || 'Failed to fetch profile.',
+          type: 'error',
+        });
       } finally {
         setLoading(false);
       }
@@ -39,7 +46,7 @@ const ProfilePage = () => {
   const handleSave = async (updatedData) => {
     const token = localStorage.getItem('access_token');
     if (!token) {
-      toast.error('Unauthorized. Please login.');
+      setMessage({ text: 'Unauthorized. Please login.', type: 'error' });
       return;
     }
 
@@ -49,26 +56,51 @@ const ProfilePage = () => {
         birthday: updatedData.birthday,
         height: Number(updatedData.height),
         weight: Number(updatedData.weight),
-        interests: updatedData.interests || [],
-        gender: updatedData.gender,
+        interests: profileData?.interests || [],
       };
 
-      let response;
-      if (profileData?.id) {
-        response = await updateProfile(payload, token);
-      } else {
-        response = await createProfile(payload, token);
-      }
+      const response = await updateProfile(payload, token);
 
-      toast.success(response.message || 'Profile saved successfully');
-      setProfileData((prev) => ({ ...prev, ...updatedData }));
+      setMessage({
+        text: response.message || 'Profile saved successfully',
+        type: 'success',
+      });
+
+      setProfileData((prev) => ({
+        ...prev,
+        ...payload,
+      }));
+
+      setLoading(true);
+
+      window.location.reload();
     } catch (error) {
-      toast.error(error || 'Failed to save profile.');
+      setMessage({
+        text: error.message || 'Failed to save profile.',
+        type: 'error',
+      });
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('gender');
+    localStorage.removeItem('uploadedImage');
+    router.push('/');
+  };
+
+  useEffect(() => {
+    if (message.text) {
+      const timer = setTimeout(() => {
+        setMessage({ text: '', type: '' });
+      }, 2000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [message]);
+
   if (loading) {
-    return <p className="text-white">Loading...</p>;
+    return <Loading />;
   }
 
   if (!profileData) {
@@ -90,8 +122,34 @@ const ProfilePage = () => {
           <div className="text-sm font-semibold">
             @{profileData.username || 'Anonymous'}
           </div>
-          <HiDotsHorizontal className="size-5" />
+          <div className="relative">
+            <HiDotsHorizontal
+              className="cursor-pointer size-5"
+              onClick={() => setDropdownVisible(!dropdownVisible)}
+            />
+            {dropdownVisible && (
+              <div className="absolute z-50 right-0 mt-2 w-32 bg-[#1C2A33] text-white rounded-md shadow-lg">
+                <button
+                  onClick={handleLogout}
+                  className="w-full text-left px-4 py-2 text-sm rounded-md  hover:bg-[#2F3C47]"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
         </div>
+
+        {/* Display message */}
+        {message.text && (
+          <p
+            className={`mb-4 text-sm text-center ${
+              message.type === 'success' ? 'text-green-500' : 'text-red-500'
+            }`}
+          >
+            {message.text}
+          </p>
+        )}
 
         {/* Banner Image */}
         <section className="mb-6">

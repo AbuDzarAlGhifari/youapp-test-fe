@@ -3,3 +3,37 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.text-gold {
+  background: linear-gradient(
+    90deg,
+    #94783e 2%,
+    #f3eda6 22%,
+    #f8fae5 33%,
+    #ffe2be 49%,
+    #d5be88 72%,
+    #f8fae5 81%,
+    #d5be88 90%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-liner-blue {
+  background: linear-gradient(90deg, #abfffd 0%, #4599db 100%, #aadaff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Utility untuk menghapus spinner input number */
+@layer utilities {
+  .no-counter::-webkit-inner-spin-button,
+  .no-counter::-webkit-outer-spin-button {
+    @apply hidden;
+  }
+  .no-counter {
+    -moz-appearance: textfield;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+}

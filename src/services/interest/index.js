@@ -1,6 +1,5 @@
 import api from '@/lib/axios';
 
-// GET Interest
 export const getInterest = async (token) => {
   try {
     const response = await api.get('/getProfile', {
@@ -12,7 +11,6 @@ export const getInterest = async (token) => {
   }
 };
 
-// POST Create or Update Interest
 export const saveInterest = async (data, token) => {
   try {
     const response = await api.post('/createProfile', data, {
@@ -24,7 +22,6 @@ export const saveInterest = async (data, token) => {
   }
 };
 
-// PUT Update Interest
 export const updateInterest = async (data, token) => {
   try {
     const response = await api.put('/updateProfile', data, {

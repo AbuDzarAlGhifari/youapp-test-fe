@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { registerUser } from '@/services/auth';
-import { toast } from 'react-hot-toast';
 import Input from '@/components/inputs/Input';
 
 const RegisterPage = () => {
@@ -15,6 +14,8 @@ const RegisterPage = () => {
     confirmPassword: '',
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const router = useRouter();
 
   const isFormValid = Object.values(formData).every((value) => value.trim());
@@ -27,22 +28,24 @@ const RegisterPage = () => {
     const { email, username, password, confirmPassword } = formData;
 
     if (!isFormValid) {
-      toast.error('Please fill in all fields.');
+      setErrorMessage('Please fill in all fields.');
       return;
     }
 
     if (password !== confirmPassword) {
-      toast.error('Passwords do not match.');
+      setErrorMessage('Passwords do not match.');
       return;
     }
 
     setIsLoading(true);
+    setErrorMessage('');
+    setSuccessMessage('');
     try {
       const response = await registerUser({ email, username, password });
-      toast.success(response.message || 'Registration successful!');
+      setSuccessMessage(response.message || 'Registration successful!');
       router.push('/');
     } catch (error) {
-      toast.error(error);
+      setErrorMessage(error.message || 'Registration failed.');
     } finally {
       setIsLoading(false);
     }
@@ -82,18 +85,28 @@ const RegisterPage = () => {
             onChange={handleChange}
           />
         </div>
+        {errorMessage && (
+          <p className="mt-3 text-sm text-center text-red-500">
+            {errorMessage}
+          </p>
+        )}
+        {successMessage && (
+          <p className="mt-3 text-sm text-center text-green-500">
+            {successMessage}
+          </p>
+        )}
         <button
           type="submit"
           disabled={!isFormValid || isLoading}
-          className="w-full py-3 mt-6 text-base font-bold text-white rounded-lg shadow-md bg-gradient-to-r from-green-400 to-blue-500 hover:from-blue-500 hover:to-green-300 disabled:opacity-50"
+          className="w-full py-3 mt-6 text-base font-bold text-white rounded-lg bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 disabled:opacity-50"
         >
           {isLoading ? 'Registering...' : 'Register'}
         </button>
         <p className="text-sm text-center text-white mt-11">
           Have an account?{' '}
           <Link
-            href="/login"
-            className="text-yellow-200 border-b border-yellow-200 hover:opacity-50"
+            href="/"
+            className="border-b border-yellow-200 text-gold hover:opacity-50"
           >
             Login here
           </Link>

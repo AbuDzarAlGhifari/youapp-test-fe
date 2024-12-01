@@ -27,14 +27,14 @@ const Input = ({
         value={value}
         onChange={onChange}
         required={required}
-        className="w-full px-4 py-4 text-sm text-white rounded-lg bg-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full px-4 py-4 text-sm text-white rounded-lg bg-white/10 focus:outline-none"
         aria-label={placeholder}
       />
       {isPassword && (
         <button
           type="button"
           onClick={togglePasswordVisibility}
-          className="absolute inset-y-0 flex items-center text-gray-400 right-4 hover:text-gray-200 focus:outline-none"
+          className="absolute inset-y-0 flex items-center text-yellow-200 right-4 focus:outline-none"
         >
           {isPasswordVisible ? <BsEye size={20} /> : <BsEyeSlash size={20} />}
         </button>

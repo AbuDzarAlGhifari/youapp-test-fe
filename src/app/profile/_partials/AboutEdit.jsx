@@ -1,8 +1,9 @@
 'use client';
 
+import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import InputField from '@/components/inputs/InputField';
 import SelectField from '@/components/inputs/SelectField';
-import React from 'react';
 import { formatDateInput } from '@/utils/dateUtils';
 import { FaPlus } from 'react-icons/fa6';
 
@@ -13,15 +14,72 @@ const genderOptions = [
 ];
 
 const AboutEdit = ({ data, onInputChange }) => {
+  const [imagePreview, setImagePreview] = useState(
+    typeof window !== 'undefined' ? localStorage.getItem('uploadedImage') : null
+  );
+
+  const [gender, setGender] = useState(
+    typeof window !== 'undefined' ? localStorage.getItem('gender') || '' : ''
+  );
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedGender = localStorage.getItem('gender');
+      if (storedGender) {
+        setGender(storedGender);
+      }
+    }
+  }, []);
+
+  const handleGenderChange = (event) => {
+    const selectedGender = event.target.value;
+    setGender(selectedGender);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('gender', selectedGender);
+    }
+  };
+
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64Image = reader.result;
+        setImagePreview(base64Image);
+        localStorage.setItem('uploadedImage', base64Image);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
     <form className="space-y-4">
       {/* Section Gambar */}
-      <div className="flex items-center gap-2 mb-4">
-        <div className="flex items-center justify-center bg-gray-600 cursor-pointer size-14 rounded-2xl">
-          <FaPlus className="size-6" />
+      <label
+        className="flex items-center gap-2 mb-4 cursor-pointer"
+        htmlFor="imageUpload"
+      >
+        <div className="relative flex items-center justify-center overflow-hidden bg-[#D9D9D9] bg-opacity-5 w-14 h-14 rounded-2xl">
+          {imagePreview ? (
+            <Image
+              src={imagePreview}
+              alt="Uploaded"
+              fill
+              className="object-cover"
+            />
+          ) : (
+            <FaPlus className="text-yellow-100 size-6" />
+          )}
+          <input
+            id="imageUpload"
+            type="file"
+            accept="image/*"
+            onChange={handleImageUpload}
+            className="absolute inset-0 opacity-0 cursor-pointer"
+          />
         </div>
         <p className="text-xs font-medium text-white">Add image</p>
-      </div>
+      </label>
 
       {/* Name */}
       <InputField
@@ -37,8 +95,8 @@ const AboutEdit = ({ data, onInputChange }) => {
       <SelectField
         label="Gender:"
         name="gender"
-        value={data.gender}
-        onChange={onInputChange}
+        value={gender}
+        onChange={handleGenderChange}
         options={genderOptions}
       />
 
@@ -72,7 +130,7 @@ const AboutEdit = ({ data, onInputChange }) => {
 
       {/* Height */}
       <InputField
-        label="Height (cm):"
+        label="Height:"
         type="number"
         name="height"
         value={data.height}
@@ -82,7 +140,7 @@ const AboutEdit = ({ data, onInputChange }) => {
 
       {/* Weight */}
       <InputField
-        label="Weight (kg):"
+        label="Weight:"
         type="number"
         name="weight"
         value={data.weight}

@@ -4,7 +4,7 @@ const Tag = ({ label, onRemove }) => (
     {onRemove && (
       <button
         onClick={onRemove}
-        className="text-[#94A3B8] hover:text-[#F87171] transition-colors focus:outline-none"
+        className="text-white transition-colors hover:text-opacity-55 focus:outline-none"
       >
         ✕
       </button>

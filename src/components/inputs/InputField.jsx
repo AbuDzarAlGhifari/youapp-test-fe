@@ -3,7 +3,7 @@
 import React from 'react';
 
 const inputStyleBase =
-  'w-full bg-[#1C2A33] text-xs text-end text-white p-2 rounded-md outline-none border border-[#D9D9D9] border-opacity-5 mt-1';
+  'w-full bg-[#D9D9D9] bg-opacity-5 text-xs text-end text-white p-2 rounded-md outline-none border border-[#D9D9D9] border-opacity-25 mt-1';
 
 const InputField = ({
   label,
@@ -18,6 +18,9 @@ const InputField = ({
     ? `${inputStyleBase} cursor-not-allowed text-opacity-50`
     : inputStyleBase;
 
+  const inputClasses =
+    type === 'number' ? `${inputStyle} no-counter` : inputStyle;
+
   return (
     <div className="grid items-center grid-cols-12">
       <label className="col-span-4 text-xs text-white text-opacity-45">
@@ -31,7 +34,7 @@ const InputField = ({
           onChange={onChange}
           placeholder={placeholder}
           readOnly={readOnly}
-          className={inputStyle}
+          className={inputClasses}
         />
       </div>
     </div>

@@ -3,25 +3,25 @@
 import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 import { LuPencilLine } from 'react-icons/lu';
-import { toast } from 'react-hot-toast';
 import { getInterest } from '@/services/interest';
 
 const Interest = ({ initialInterests = [] }) => {
   const [interestList, setInterestList] = useState(initialInterests);
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     const fetchInterests = async () => {
       try {
         const token = localStorage.getItem('access_token');
         if (!token) {
-          toast.error('Unauthorized. Please login.');
+          setErrorMessage('Unauthorized. Please login.');
           return;
         }
 
         const profile = await getInterest(token);
         setInterestList(profile?.interests || []);
       } catch (error) {
-        toast.error(error || 'Failed to fetch interests.');
+        setErrorMessage(error.message || 'Failed to fetch interests.');
       }
     };
 
@@ -36,6 +36,11 @@ const Interest = ({ initialInterests = [] }) => {
           <LuPencilLine className="text-white cursor-pointer" />
         </Link>
       </div>
+      {errorMessage && (
+        <p className="mb-4 text-sm font-medium text-center text-red-500">
+          {errorMessage}
+        </p>
+      )}
       {interestList.length === 0 ? (
         <p className="text-sm font-medium text-white text-opacity-45">
           Add in your interests to find a better match

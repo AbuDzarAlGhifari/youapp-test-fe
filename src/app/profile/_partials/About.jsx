@@ -47,7 +47,7 @@ const About = ({ data, onSave }) => {
           />
         ) : (
           <button
-            className="text-sm text-yellow-300 hover:opacity-75"
+            className="text-sm text-gold hover:opacity-75"
             onClick={handleSubmit}
           >
             Save & Update

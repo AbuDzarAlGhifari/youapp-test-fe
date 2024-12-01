@@ -1,13 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { Toaster } from 'react-hot-toast';
 import { FaAngleLeft } from 'react-icons/fa6';
 
 const AuthLayouts = ({ children }) => {
   return (
     <>
-      <Toaster position="top-right" reverseOrder={false} />
       <div className="min-h-screen bg-gradient-to-bl from-[#1F4247] via-[#0D1D23] to-[#09141A] flex flex-col items-center sm:justify-center text-white">
         <div className="w-full max-w-sm mx-auto pt-9 sm:shadow-lg sm:rounded-xl">
           <Link
